@@ -1,5 +1,6 @@
 import { useState } from "react";
 import '../styles/Calculadora.css';
+import { evaluate } from 'mathjs';
 import Resultado from "./Resultado";
 
 function Calculadora() {
@@ -40,7 +41,7 @@ function Calculadora() {
             setResultadoOrden("No hay números seleccionados.");
             return;
         }
-        fetch('https://backend-project-lovat-six.vercel.app/v1/calculadora/ascendente', {
+        fetch('http://localhost:3500/v1/calculadora/ascendente', {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ numbers })
@@ -85,6 +86,24 @@ function Calculadora() {
         if (checks[4]) variables['E'] = numE;
         if (checks[5]) variables['F'] = numF;
 
+        // Evaluar la ecuación localmente
+        try {
+            // Crear una copia de la ecuación para evitar mutaciones
+            let ecuacionEvaluada = ecuacion;
+
+            // Reemplazar las variables por sus valores
+            for (const [key, value] of Object.entries(variables)) {
+                ecuacionEvaluada = ecuacionEvaluada.replace(new RegExp(key, 'g'), value);
+            }
+
+            // Evaluar la ecuación utilizando mathjs
+            const resultado = evaluate(ecuacionEvaluada);
+            setResultadoEcuacion(`Resultado local: ${resultado}`);
+        } catch (error) {
+            setResultadoEcuacion(`Error al evaluar localmente: ${error.message}`);
+        }
+
+        // Enviar la ecuación al backend
         fetch('http://localhost:3500/v1/calculadora/ecuacion', {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
@@ -111,9 +130,9 @@ function Calculadora() {
 
     return (
         <div className="container">
-            <h1 id="txtCalculadora">CALCULADORA</h1>
+            <h1 id="txtCalculadora">CALCULADORA PARCIAL 1</h1>
 
-            <div className="cuadritos">
+            <div className="bloques">
                 {['A', 'B', 'C'].map((letter, index) => (
                     <div className="cuadro" key={index}>
                         <label>{letter}</label>
@@ -131,7 +150,7 @@ function Calculadora() {
                 ))}
             </div>
 
-            <div className="cuadritos">
+            <div className="bloques">
                 {['D', 'E', 'F'].map((letter, index) => (
                     <div className="cuadro" key={index + 3}>
                         <label>{letter}</label>
@@ -149,25 +168,32 @@ function Calculadora() {
                 ))}
             </div>
 
-            <div>
-                <button className="btnOrden" onClick={handleAscendente}>Ascendente</button>
-                <button className="btnOrden" onClick={handleDescendente}>Descendente</button>
-            </div>
+            <div className="buttonContainer">
+    <button className="btnOrden" onClick={handleAscendente}>Ascendente</button>
+    <button className="btnOrden" onClick={handleDescendente}>Descendente</button>
+</div>
 
-            <Resultado resultado={resultadoOrden} />
 
-            <div className="ecuacion-container">
-                <label>Ecuación:</label>
-                <input 
-                    type="text" 
-                    value={ecuacion} 
-                    onChange={(e) => setEcuacion(e.target.value)} 
-                />
-                <button onClick={handleEcuacionSubmit}>OK</button>
-            </div>
 
-            <Resultado resultado={resultadoEcuacion} />
-        </div>
+<Resultado resultado={resultadoOrden} />
+
+<div className="ecuacion-container">
+    <label className="labelEstilo">Ecuación:</label>
+    <input 
+        type="text" 
+        value={ecuacion} 
+        onChange={(e) => setEcuacion(e.target.value)} 
+    />
+    <button onClick={handleEcuacionSubmit}>OK</button>
+</div>
+
+<Resultado resultado={resultadoEcuacion} />
+
+<p className="mensaje-info">
+    Para usar la ecuación debe colocar la letra entre paréntesis ( ), ejemplo: 2(A)+C+3(B).
+</p>
+</div>
+
     );
 }
 
