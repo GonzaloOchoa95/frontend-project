@@ -41,7 +41,7 @@ function Calculadora() {
             setResultadoOrden("No hay números seleccionados.");
             return;
         }
-        fetch('http://localhost:3500/v1/calculadora/ascendente', {
+        fetch('https://backend-project-lovat-six.vercel.app/v1/calculadora/ascendente', {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ numbers })
